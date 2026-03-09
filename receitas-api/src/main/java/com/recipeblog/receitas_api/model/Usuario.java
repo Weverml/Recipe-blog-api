@@ -16,24 +16,24 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity                         // diz ao JPA que essa classe é uma tabela
-@Table(name = "usuarios")       // define o nome da tabela no banco
-@Data                           // Lombok: gera getters, setters, toString automaticamente
-@NoArgsConstructor              // Lombok: gera construtor vazio
-@AllArgsConstructor             // Lombok: gera construtor com todos os campos
+@Entity                         
+@Table(name = "usuarios")      
+@Data                          
+@NoArgsConstructor              
+@AllArgsConstructor             
 public class Usuario {
     
-    @Id                                                    // chave primária
-    @GeneratedValue(strategy = GenerationType.IDENTITY)    // auto incremento (1, 2, 3...)
+    @Id                                                    
+    @GeneratedValue(strategy = GenerationType.IDENTITY)   
     private Long id;
 
-    @NotBlank                          // validação: não pode ser vazio
-    @Column(nullable = false)          // no banco: coluna obrigatória
+    @NotBlank                          
+    @Column(nullable = false)          
     private String nome;
 
     @NotBlank
-    @Email                             // validação: precisa ter formato de email
-    @Column(nullable = false, unique = true)   // único no banco (não pode repetir)
+    @Email                             
+    @Column(nullable = false, unique = true)   
     private String email;
 
     @NotNull
@@ -45,12 +45,12 @@ public class Usuario {
     private String senha;
 
     
-    @Column(unique = true)             // username único, mas não obrigatório
+    @Column(unique = true)            
     private String username;
 
-    private String fotoPerfil;         // url da foto
-    private String bio;                // descrição do perfil
+    private String fotoPerfil;         
+    private String bio;                
 
-    @Column(updatable = false)         // esse campo nunca será alterado após criado
-    private LocalDateTime criadoEm = LocalDateTime.now(); // data de cadastro
+    @Column(updatable = false)         
+    private LocalDateTime criadoEm = LocalDateTime.now(); 
 }
