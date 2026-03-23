@@ -8,6 +8,7 @@ import com.recipeblog.receitas_api.model.Receita;
 import com.recipeblog.receitas_api.model.Usuario;
 import com.recipeblog.receitas_api.repository.ReceitaRepository;
 import com.recipeblog.receitas_api.repository.UsuarioRepository;
+import com.recipeblog.receitas_api.service.SeguidorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,8 +23,8 @@ import java.util.stream.Collectors;
 public class ReceitaService {
     private final ReceitaRepository receitaRepository;
     private final UsuarioRepository usuarioRepository;
- 
-    // Cloudinary injetado via CloudinaryConfig
+    private final SeguidorService seguidorService;
+
     private final Cloudinary cloudinary;
  
     public ReceitaDTO criar(Long usuarioId, String titulo, String descricao,
@@ -34,8 +35,6 @@ public class ReceitaService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
  
-        // Faz upload da imagem para o Cloudinary se ela foi enviada
-        // O Cloudinary retorna uma URL pública que funciona em qualquer lugar
         String imagemUrl = null;
         if (imagem != null && !imagem.isEmpty()) {
             imagemUrl = uploadParaCloudinary(imagem);
@@ -68,13 +67,11 @@ public class ReceitaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Receita não encontrada"));
     }
  
-    // Envia o arquivo para o Cloudinary e retorna a URL pública da imagem
     private String uploadParaCloudinary(MultipartFile arquivo) throws IOException {
         Map uploadResult = cloudinary.uploader().upload(
                 arquivo.getBytes(),
-                ObjectUtils.asMap("folder", "receitas") // salva na pasta "receitas" no Cloudinary
+                ObjectUtils.asMap("folder", "receitas") 
         );
-        // "secure_url" retorna a URL com HTTPS
         return (String) uploadResult.get("secure_url");
     }
  
@@ -87,12 +84,23 @@ public class ReceitaService {
                 .modoPreparo(r.getModoPreparo())
                 .categoria(r.getCategoria())
                 .tempoPreparo(r.getTempoPreparo())
-                // URL pública do Cloudinary — funciona direto no frontend
                 .imagemUrl(r.getImagemUrl())
                 .criadoEm(r.getCriadoEm())
                 .usuarioId(r.getUsuario().getId())
                 .usuarioNome(r.getUsuario().getNome())
                 .usuarioUsername(r.getUsuario().getUsername())
+                .usuarioFoto(r.getUsuario().getFotoPerfil())
                 .build();
+    }
+
+    public List<ReceitaDTO> feed(Long usuarioId) {
+        List<Long> ids = seguidorService.listarIdsSeguidosPor(usuarioId);
+        
+        ids.add(usuarioId);
+        
+        return receitaRepository.findByUsuarioIdInOrderByCriadoEmDesc(ids)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 }

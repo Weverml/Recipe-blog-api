@@ -1,6 +1,7 @@
 package com.recipeblog.receitas_api.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
  
@@ -16,6 +17,7 @@ import com.recipeblog.receitas_api.exception.BusinessException;
 import com.recipeblog.receitas_api.exception.ResourceNotFoundException;
 import com.recipeblog.receitas_api.model.Usuario;
 import com.recipeblog.receitas_api.repository.ReceitaRepository;
+import com.recipeblog.receitas_api.repository.SeguidorRepository;
 import com.recipeblog.receitas_api.repository.UsuarioRepository;
 
 @Service 
@@ -28,6 +30,9 @@ public class UsuarioService {
  
     @Autowired
     private Cloudinary cloudinary;
+
+    @Autowired
+    private SeguidorRepository seguidorRepository;
  
     public Usuario cadastrar(UsuarioDTO dto) {
         if (repository.existsByEmail(dto.getEmail())) {
@@ -95,22 +100,26 @@ public class UsuarioService {
  
 
     public PerfilDTO perfilCompleto(Long id) {
-        Usuario usuario = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
- 
-        long totalReceitas = receitaRepository.countByUsuarioId(id);
- 
-        return PerfilDTO.builder()
-                .id(usuario.getId())
-                .nome(usuario.getNome())
-                .username(usuario.getUsername())
-                .email(usuario.getEmail())
-                .bio(usuario.getBio())
-                .fotoPerfil(usuario.getFotoPerfil())
-                .dataNascimento(usuario.getDataNascimento())
-                .totalReceitas(totalReceitas)
-                .build();
-    }
+    Usuario usuario = repository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+    long totalReceitas = receitaRepository.countByUsuarioId(id);
+    long totalSeguidores = seguidorRepository.countBySeguidoId(id);
+    long totalSeguindo = seguidorRepository.countBySeguidorId(id);
+
+    return PerfilDTO.builder()
+            .id(usuario.getId())
+            .nome(usuario.getNome())
+            .username(usuario.getUsername())
+            .email(usuario.getEmail())
+            .bio(usuario.getBio())
+            .fotoPerfil(usuario.getFotoPerfil())
+            .dataNascimento(usuario.getDataNascimento())
+            .totalReceitas(totalReceitas)
+            .totalSeguidores(totalSeguidores)
+            .totalSeguindo(totalSeguindo)
+            .build();
+}
  
     private String uploadParaCloudinary(MultipartFile arquivo) throws IOException {
         Map uploadResult = cloudinary.uploader().upload(
@@ -118,5 +127,8 @@ public class UsuarioService {
                 ObjectUtils.asMap("folder", "perfis") 
         );
         return (String) uploadResult.get("secure_url");
+    }
+    public List<Usuario> buscarPorNome(String termo) {
+        return repository.findByNomeContainingIgnoreCaseOrUsernameContainingIgnoreCase(termo, termo);
     }
 }

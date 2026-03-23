@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,43 +20,27 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "receitas")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class Receita {
-   
+@Table(name = "seguidores",
+
+    uniqueConstraints = @UniqueConstraint(columnNames = {"seguidor_id", "seguido_id"}))
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Seguidor {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String titulo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seguidor_id", nullable = false)
+    private Usuario seguidor;
 
-    @Column(columnDefinition = "TEXT")
-    private String descricao;
-
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String ingredientes;
-
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String modoPreparo;
-
-    private String categoria;
-
-    private String imagemUrl;
-
-    private Integer tempoPreparo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seguido_id", nullable = false)
+    private Usuario seguido;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
-    
     @PrePersist
     public void prePersist() {
         this.criadoEm = LocalDateTime.now();

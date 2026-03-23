@@ -22,38 +22,36 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/receitas")
 @RequiredArgsConstructor
 public class ReceitaController {
-    // O Service é injetado aqui — o Controller apenas recebe a requisição e delega ao Service
     private final ReceitaService receitaService;
 
-    // POST /receitas — Cria uma nova receita
-    // consumes = "multipart/form-data" porque envia texto + arquivo de imagem juntos
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ReceitaDTO> criar(
-            @RequestParam Long usuarioId,              // ID do usuário que está criando
-            @RequestParam String titulo,               // Título da receita (obrigatório)
-            @RequestParam(required = false) String descricao,       // Descrição (opcional)
-            @RequestParam String ingredientes,         // Ingredientes (obrigatório)
-            @RequestParam String modoPreparo,          // Modo de preparo (obrigatório)
-            @RequestParam(required = false) String categoria,       // Categoria (opcional)
-            @RequestParam(required = false) Integer tempoPreparo,   // Tempo em minutos (opcional)
-            @RequestPart(required = false) MultipartFile imagem     // Arquivo de imagem (opcional)
+            @RequestParam Long usuarioId,              
+            @RequestParam String titulo,               
+            @RequestParam(required = false) String descricao,       
+            @RequestParam String ingredientes,         
+            @RequestParam String modoPreparo,          
+            @RequestParam(required = false) String categoria,       
+            @RequestParam(required = false) Integer tempoPreparo,   
+            @RequestPart(required = false) MultipartFile imagem     
     ) throws IOException {
         return ResponseEntity.ok(receitaService.criar(
                 usuarioId, titulo, descricao, ingredientes,
                 modoPreparo, categoria, tempoPreparo, imagem));
     }
 
-    // GET /receitas/usuario/{usuarioId} — Lista todas as receitas de um usuário
-    // Usado na página de perfil para montar o grid de publicações
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<List<ReceitaDTO>> listarPorUsuario(@PathVariable Long usuarioId) {
         return ResponseEntity.ok(receitaService.listarPorUsuario(usuarioId));
     }
 
-    // GET /receitas/{id} — Busca uma receita específica pelo ID
-    // Usado para abrir a página de detalhe de uma receita
     @GetMapping("/{id}")
     public ResponseEntity<ReceitaDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(receitaService.buscarPorId(id));
+    }
+
+    @GetMapping("/feed/{usuarioId}")
+    public ResponseEntity<List<ReceitaDTO>> feed(@PathVariable Long usuarioId) {
+        return ResponseEntity.ok(receitaService.feed(usuarioId));
     }
 }

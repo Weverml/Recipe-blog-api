@@ -21,18 +21,14 @@ public class ReceitaDTO {
     private String modoPreparo;
     private String categoria;
 
-    // URL completa da imagem (ex: "/uploads/abc123.jpg") — pronta para o frontend usar
     private String imagemUrl;
 
-    // Tempo de preparo em minutos
     private Integer tempoPreparo;
 
-    // Data de criação da receita
     private LocalDateTime criadoEm;
 
-    // Dados básicos do usuário dono da receita
-    // Incluímos aqui para o frontend não precisar fazer uma segunda requisição
     private Long usuarioId;
     private String usuarioNome;
     private String usuarioUsername;
+    private String usuarioFoto;
 }

@@ -1,6 +1,7 @@
 package com.recipeblog.receitas_api.controller;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.recipeblog.receitas_api.dto.PerfilDTO;
+import com.recipeblog.receitas_api.dto.UsuarioBuscaDTO;
 import com.recipeblog.receitas_api.dto.UsuarioDTO;
 import com.recipeblog.receitas_api.model.Usuario;
 import com.recipeblog.receitas_api.service.UsuarioService;
@@ -53,13 +55,11 @@ public class UsuarioController {
         return ResponseEntity.ok(service.atualizar(id, dto));
     }
     
-    // GET /usuarios/{id}/perfil — retorna dados do perfil + total de receitas
     @GetMapping("/{id}/perfil")
     public ResponseEntity<PerfilDTO> perfilCompleto(@PathVariable Long id) {
         return ResponseEntity.ok(service.perfilCompleto(id));
     }
 
-    // PUT /usuarios/{id}/perfil — atualiza foto e bio
     @PutMapping(value = "/{id}/perfil", consumes = "multipart/form-data")
     public ResponseEntity<Usuario> atualizarPerfil(
             @PathVariable Long id,
@@ -68,5 +68,21 @@ public class UsuarioController {
             @RequestPart(required = false) MultipartFile foto
     ) throws IOException {
         return ResponseEntity.ok(service.atualizarPerfil(id, nome, bio, foto));
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<List<UsuarioBuscaDTO>> buscar(@RequestParam String termo) {
+        return ResponseEntity.ok(
+            service.buscarPorNome(termo).stream()
+                .map(u -> UsuarioBuscaDTO.builder()
+                    .id(u.getId())
+                    .nome(u.getNome())
+                    .username(u.getUsername())
+                    .bio(u.getBio())
+                    .fotoPerfil(u.getFotoPerfil())
+                    .build()
+                )
+                .collect(java.util.stream.Collectors.toList())
+        );
     }
 }
